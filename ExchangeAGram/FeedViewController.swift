@@ -14,7 +14,11 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
 
     @IBOutlet weak var collectionView: UICollectionView!
     
+    // We create an empty array of types AnyObject
+    
     var feedArray: [AnyObject] = []
+    
+    // Then, under viewDidLoad
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,7 +26,7 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         // Do any additional setup after loading the view.
     
         let request = NSFetchRequest(entityName: "FeedItem")
-        let appDelegate:AppDelegate = (UIApplication.sharedApplication().delegate as! AppDelegate)
+        let appDelegate:AppDelegate = (UIApplication.sharedApplication().delegate as AppDelegate)
         let context:NSManagedObjectContext = appDelegate.managedObjectContext!
         feedArray = context.executeFetchRequest(request, error: nil)!
     }
@@ -55,6 +59,9 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
             
             self.presentViewController(cameraController, animated: true, completion: nil)
         }
+            
+    // In the case, where the camera is not available, like when we run our app in the simulator, we need to be able to access some photos. So, we are going to grant access to our photo library, which will give us some photos to manipulate and display in our application
+            
         else if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.PhotoLibrary) {
             
             var photoLibraryController = UIImagePickerController()
@@ -74,20 +81,26 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         }
     }
     
+    // Now, we are going to implement one of the UIImagePickerController delegate functions which will determine which photo we are selecting from the camera or photo library
+    
+    // This code will persist a FeedItem and we're going to utilize Core Data, so that we are able to create a FeedItems and access our NSManagedObject from our app delegate
+    
     // UIImagePickerControllerDelegate
     
     func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [NSObject : AnyObject]) {
-        let image = info[UIImagePickerControllerOriginalImage] as! UIImage
+        let image = info[UIImagePickerControllerOriginalImage] as UIImage
         let imageData = UIImageJPEGRepresentation(image, 1.0)
         
-        let managedObjectContext = (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
+        let managedObjectContext = (UIApplication.sharedApplication().delegate as AppDelegate).managedObjectContext
         let entityDescription = NSEntityDescription.entityForName("FeedItem", inManagedObjectContext: managedObjectContext!)
         let feedItem = FeedItem(entity: entityDescription!, insertIntoManagedObjectContext: managedObjectContext!)
         
         feedItem.image = imageData
         feedItem.caption = "test caption"
         
-        (UIApplication.sharedApplication().delegate as! AppDelegate).saveContext()
+        (UIApplication.sharedApplication().delegate as AppDelegate).saveContext()
+        
+        // We still need to adjust our ImagePickerController, so that our photo appears the first time we run our application and reload the collection view, so that it refresh our images. Inside of our imagePickerController function
         
         feedArray.append(feedItem)
         
@@ -96,6 +109,7 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         self.collectionView.reloadData()
     }
     
+    // Now, we want to implement these functions so that we can manipulate our CollectionView
     
     // UICollectionViewDataSource
     
@@ -103,15 +117,21 @@ class FeedViewController: UIViewController, UICollectionViewDataSource, UICollec
         return 1
     }
     
+    // We need to update our numberOfItemsInSection function, so that it determines the number of cells in our one section, dynamically. This will count the number of images we have and automatically generate the same amount of cells for each photo
+    
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return feedArray.count
     }
     
+    // Next, we need to format our FeedCell. Also, we are going to implement dequeueReusableCellWithReuseIdentifier function, which will take any empty cells and recycle them, or create a new one if none are available
+    
     func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         
-        var cell: FeedCell = collectionView.dequeueReusableCellWithReuseIdentifier("Cell", forIndexPath: indexPath) as! FeedCell
+        var cell: FeedCell = collectionView.dequeueReusableCellWithReuseIdentifier("Cell", forIndexPath: indexPath) as FeedCell
         
-        let thisItem = feedArray[indexPath.row] as! FeedItem
+        // Next, we are going to grab the item from our feedArray. Then, we are able to extract our image and caption from the item. Lastly, return our cell and close with a curly bracket
+        
+        let thisItem = feedArray[indexPath.row] as FeedItem
         
         cell.imageView.image = UIImage(data: thisItem.image)
         cell.captionLabel.text = thisItem.caption
