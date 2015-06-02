@@ -6,8 +6,4 @@
 //  Copyright (c) 2015 Morgan Hart. All rights reserved.
 //
 
-// import <FacebookSDK/FacebookSDK.h>
-// import <UIkit/UIkit.h>
-#import <FBSDKLoginKit/FBSDKLoginKit.h>
-#import <FBSDKSharekit/FBSDKShareKit.h>
-#import <FBSDKCoreKit/FBSDKCoreKit.h>
+#import <FacebookSDK/FacebookSDK.h>
